@@ -162,7 +162,13 @@ const NetWorth = () => {
 
   const handleRefresh = () => {
     setIsChartLoading(true);
-    refreshPrices();
+    // TODO: Fix for when on the public URL: https://bradguthrie-swa.github.io/networth-dashboard/
+    // Refreshing prices works fine locally, but not on the public website.
+    if (import.meta.env.DEV) {
+      refreshPrices();
+    } else {
+      console.info("Refreshing for values is disabled on the public website.");
+    }
   };
 
   return (
