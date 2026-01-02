@@ -47,7 +47,7 @@ const NetWorth = () => {
           return null;
         });
 
-        const next = financialAccounts.map((acct) => {
+        const next = financialAccounts?.map((acct) => {
           // Update crypto balances from context
           if (
             acct.taxType === "Crypto" &&
@@ -125,7 +125,7 @@ const NetWorth = () => {
 
   const categoryData = useMemo(
     () =>
-      Object.entries(byCategory).map(([name, info]) => ({
+      Object.entries(byCategory)?.map(([name, info]) => ({
         name,
         value: info.total,
       })),
@@ -134,7 +134,7 @@ const NetWorth = () => {
 
   const sortedAccounts = useMemo(() => {
     const list = [...acctList];
-    list.sort((a, b) => {
+    list?.sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
       if (sortKey === "balance") return (a.balance - b.balance) * dir;
       const valA = (a[sortKey] ?? "").toString().toLowerCase();
@@ -197,7 +197,7 @@ const NetWorth = () => {
             <p className="text-sm text-slate-500">Largest category</p>
             <p className="mt-1 text-xl font-semibold text-slate-900">
               <span className="text-2xl font-semibold text-slate-900">
-                {categoryData.sort((a, b) => b.value - a.value)[0]?.name ??
+                {categoryData?.sort((a, b) => b.value - a.value)[0]?.name ??
                   "Unknown"}
               </span>
               <span className="text-2xl font-semibold mx-2 text-slate-500">
@@ -205,7 +205,8 @@ const NetWorth = () => {
               </span>
               <span className="text-2xl font-semibold text-slate-900">
                 {formatCurrency(
-                  categoryData.sort((a, b) => b.value - a.value)[0]?.value ?? 0,
+                  categoryData?.sort((a, b) => b.value - a.value)[0]?.value ??
+                    0,
                   0
                 )}
               </span>
@@ -272,7 +273,7 @@ const NetWorth = () => {
                         `${name} ${(percent * 100).toFixed(0)}%`
                       }
                     >
-                      {categoryData.map((entry, index) => (
+                      {categoryData?.map((entry, index) => (
                         <Cell
                           key={entry.name}
                           fill={COLORS[index % COLORS.length]}
@@ -382,7 +383,7 @@ const NetWorth = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {sortedAccounts.map((acct) => (
+                {sortedAccounts?.map((acct) => (
                   <tr key={acct.id}>
                     <td className="px-4 py-3">
                       <div

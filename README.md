@@ -1,4 +1,4 @@
-# Net Worth Dashboard
+# [Net Worth Dashboard](https://bradguthrie-swa.github.io/networth-dashboard/)
 
 Personal dashboard for displaying net worth built with React and Tailwind CSS. Demonstrates modern frontend workflows, API integration, and developer productivity with Cursor and AI-assisted development.
 
