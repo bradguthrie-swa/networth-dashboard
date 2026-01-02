@@ -1,13 +1,17 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { fetchCryptoPrices } from "../utils/cryptoPrices";
 import {
-  POLLING_INTERVAL_5_SECONDS_MS,
-  POLLING_INTERVAL_5_MINUTES_MS,
+  POLLING_INTERVAL_1_MINUTE_MS,
+  POLLING_INTERVAL_480_MINUTES_MS,
 } from "../utils/constants";
 const CryptoPriceContext = createContext(null);
 
 const CACHE_KEY = "crypto_prices_cache";
-const CACHE_DURATION = POLLING_INTERVAL_5_MINUTES_MS;
+
+// When not on local dev environment, set the polling interval to be every 8 hours
+const CACHE_DURATION = import.meta.env.DEV
+  ? POLLING_INTERVAL_1_MINUTE_MS
+  : POLLING_INTERVAL_480_MINUTES_MS;
 
 const getCachedPrices = () => {
   try {
@@ -17,7 +21,7 @@ const getCachedPrices = () => {
     const { prices, timestamp } = JSON.parse(cached);
     const now = Date.now();
 
-    // Check if cache is still valid (within 5 minutes)
+    // Check if cache is still valid within the given polling interval
     if (now - timestamp < CACHE_DURATION) {
       return { prices, timestamp };
     }
@@ -118,10 +122,10 @@ export const CryptoPriceProvider = ({ children }) => {
     loadPrices();
   }, []);
 
-  // Set up interval to refresh every 5 minutes
+  // Set up polling interval to refresh for crypto prices
   useEffect(() => {
     const interval = setInterval(() => {
-      loadPrices(true); // Force refresh after 5 minutes
+      loadPrices(true);
     }, CACHE_DURATION);
 
     return () => clearInterval(interval);
