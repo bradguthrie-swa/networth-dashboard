@@ -12,3 +12,17 @@ export const POLLING_INTERVAL_480_MINUTES_MS = 480 * 60 * 1000; // 480 minutes /
 
 // render delays in milliseconds
 export const RENDER_DELAY_1_SECOND_MS = 1000; // 1 second
+
+// maximum decimal points for number formatting
+export const FINANCIAL_ACCOUNT_MAX_DIGITS = 2;
+export const CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS = 4;
+
+// pie chart colors for net worth
+export const NET_WORTH_PIE_CHART_COLORS = [
+  "#0ea5e9", // blue
+  "#22c55e", // green
+  "#ef4444", // red
+  "#f59e0b", // orange
+  "#6366f1", // purple
+  "#14b8a6", // teal
+];
