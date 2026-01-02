@@ -15,7 +15,7 @@ import { computeNetWorth, formatCurrency } from "../utils/netWorth";
 import {
   CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS,
   FINANCIAL_ACCOUNT_MAX_DIGITS,
-  RENDER_DELAY_1_SECOND_MS,
+  RENDER_DELAY_HALF_SECOND_MS,
   NET_WORTH_PIE_CHART_COLORS,
 } from "../utils/constants";
 
@@ -33,6 +33,16 @@ const NetWorth = () => {
   const [priceError, setPriceError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isChartLoading, setIsChartLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const loadSchwabBalances = async () => {
@@ -96,7 +106,7 @@ const NetWorth = () => {
         // Mark chart as ready after a short delay to allow rendering
         setTimeout(() => {
           setIsChartLoading(false);
-        }, RENDER_DELAY_1_SECOND_MS);
+        }, RENDER_DELAY_HALF_SECOND_MS);
       } catch (err) {
         // If update fails, keep static balances
         setPriceError("Live prices unavailable; showing last saved values.");
@@ -259,7 +269,7 @@ const NetWorth = () => {
           <div className="lg:col-span-2 rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500">Allocation</p>
+                <p className="text-md text-slate-500">Allocation</p>
                 <p className="text-xl font-semibold text-slate-900">
                   By category
                 </p>
@@ -304,11 +314,16 @@ const NetWorth = () => {
                       data={categoryData}
                       cx="50%"
                       cy="50%"
-                      outerRadius={110}
+                      outerRadius="90%"
                       isAnimationActive={false}
-                      label={({ name, percent }) =>
-                        `${name} ${(percent * 100).toFixed(0)}%`
+                      label={
+                        isMobile
+                          ? false
+                          : ({ name, percent }) =>
+                              `${name} ${(percent * 100).toFixed(0)}%`
                       }
+                      labelLine={!isMobile}
+                      legendType="circle"
                     >
                       {categoryData?.map((entry, index) => (
                         <Cell
@@ -371,13 +386,13 @@ const NetWorth = () => {
         <section className="rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Accounts</p>
+              <p className="text-md text-slate-500">Accounts</p>
               <p className="text-xl font-semibold text-slate-900">
                 Balances by account
               </p>
             </div>
           </div>
-          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
             <table className="min-w-full divide-y divide-slate-100 text-sm text-slate-700">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>

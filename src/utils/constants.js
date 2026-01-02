@@ -11,6 +11,7 @@ export const POLLING_INTERVAL_240_MINUTES_MS = 240 * 60 * 1000; // 240 minutes /
 export const POLLING_INTERVAL_480_MINUTES_MS = 480 * 60 * 1000; // 480 minutes / 8 hours
 
 // render delays in milliseconds
+export const RENDER_DELAY_HALF_SECOND_MS = 500; // 0.5 seconds
 export const RENDER_DELAY_1_SECOND_MS = 1000; // 1 second
 
 // maximum decimal points for number formatting
