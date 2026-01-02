@@ -161,9 +161,9 @@ const NetWorth = () => {
   };
 
   const handleRefresh = () => {
-    setIsChartLoading(true);
     // TODO: Fix for when on the public URL: https://bradguthrie-swa.github.io/networth-dashboard/
-    // Refreshing prices works fine locally, but not on the public website.
+    // Refreshing for the crypto prices seems to cause an error on the page - likely due to data rendering/not using optional chaining.
+    // This issue appears to happen when the setIsChartLoading state changes.
     if (import.meta.env.DEV) {
       refreshPrices();
     } else {
@@ -183,11 +183,12 @@ const NetWorth = () => {
             </div>
             <p className="text-sm text-slate-500">
               Snapshot across retirement accounts, taxable brokerage accounts,
-              and Crypto holdings.
+              and cryptocurrency holdings.
             </p>
             <p className="text-sm text-slate-500">
-              Crypto holdings refresh automatically using the CoinGecko API. All
-              others are tracked manually.
+              Cryptocurrency holdings refresh automatically using the CoinGecko
+              API based off the amounts tracked in-code. All other values are
+              tracked manually for demonstration purposes.
             </p>
           </div>
         </header>
@@ -206,7 +207,7 @@ const NetWorth = () => {
                 {categoryData?.sort((a, b) => b.value - a.value)[0]?.name ??
                   "Unknown"}
               </span>
-              <span className="text-2xl font-semibold mx-2 text-slate-500">
+              <span className="text-2xl font-semibold mx-2 text-slate-900">
                 —
               </span>
               <span className="text-2xl font-semibold text-slate-900">
@@ -332,7 +333,7 @@ const NetWorth = () => {
                       onClick={() => toggleSort("name")}
                       className="flex items-center gap-1"
                     >
-                      Account{" "}
+                      Account
                       <span className="text-xs text-slate-500">
                         {sortIcon("name")}
                       </span>
@@ -344,7 +345,7 @@ const NetWorth = () => {
                       onClick={() => toggleSort("category")}
                       className="flex items-center gap-1"
                     >
-                      Category{" "}
+                      Category
                       <span className="text-xs text-slate-500">
                         {sortIcon("category")}
                       </span>
@@ -356,7 +357,7 @@ const NetWorth = () => {
                       onClick={() => toggleSort("taxType")}
                       className="flex items-center gap-1"
                     >
-                      Tax Type{" "}
+                      Tax Type
                       <span className="text-xs text-slate-500">
                         {sortIcon("taxType")}
                       </span>
@@ -368,7 +369,7 @@ const NetWorth = () => {
                       onClick={() => toggleSort("description")}
                       className="flex items-center gap-1"
                     >
-                      Description{" "}
+                      Description
                       <span className="text-xs text-slate-500">
                         {sortIcon("description")}
                       </span>
@@ -380,7 +381,7 @@ const NetWorth = () => {
                       onClick={() => toggleSort("balance")}
                       className="flex items-center gap-1"
                     >
-                      Balance{" "}
+                      Balance
                       <span className="text-xs text-slate-500">
                         {sortIcon("balance")}
                       </span>
@@ -432,7 +433,9 @@ const NetWorth = () => {
           ) : (
             <p className="mt-2 text-xs text-slate-500">
               Crypto balances refresh via CoinGecko API. Schwab account balances
-              refresh via Schwab API. Updates every 5 minutes.
+              refresh via Schwab API. Automatically updates every minute when
+              developing locally, otherwise, automatically updates every 8
+              hours.
             </p>
           )}
           <p className="mt-1 text-xs text-slate-500">
