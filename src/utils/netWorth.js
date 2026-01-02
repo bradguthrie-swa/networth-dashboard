@@ -26,3 +26,28 @@ export const computeNetWorth = (accounts) => {
     accounts,
   };
 };
+
+// maximum decimal points for number formatting
+export const ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS = 2;
+export const RETIREMENT_INVESTMENT_ACCOUNT_MAX_DIGITS = 2;
+export const CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS = 4;
+
+/**
+ * Generates a randomized number within a given range and a given number of digits.
+ *
+ * @param {Number} min - A minimum value for the randomized number.
+ * @param {Number} max - A maximum value for the randomized number.
+ * @param {Number} maxDecimalPoints - A maximum number of decimal points for the randomized number.
+ * @returns {Number} maxDecimalPoints - A randomized number within the given range and within the given maximum decimal points.
+ */
+export const generateRandomNumberInRangeWithMaxDigits = (
+  min,
+  max,
+  maxDecimalPoints = RETIREMENT_INVESTMENT_ACCOUNT_MAX_DIGITS
+) => {
+  const randomNumber = Math.random() * (max - min) + min;
+  const randomNumberWithMaxDecimalPoints = Number(
+    randomNumber.toFixed(maxDecimalPoints)
+  );
+  return randomNumberWithMaxDecimalPoints;
+};

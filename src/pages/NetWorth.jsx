@@ -8,7 +8,11 @@ import {
   Legend as ReLegend,
 } from "recharts";
 import { financialAccounts } from "../data/netWorth";
-import { computeNetWorth, formatCurrency } from "../utils/netWorth";
+import {
+  ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS,
+  computeNetWorth,
+  formatCurrency,
+} from "../utils/netWorth";
 import { useCryptoPrices } from "../contexts/CryptoPriceContext";
 import { fetchSchwabBalances } from "../utils/schwabApi";
 import { RefreshIcon } from "../icons/RefreshIcon";
@@ -47,36 +51,36 @@ const NetWorth = () => {
           return null;
         });
 
-        const next = financialAccounts?.map((acct) => {
+        const next = financialAccounts?.map((financialAccount) => {
           // Update crypto balances from context
           if (
-            acct.taxType === "Crypto" &&
-            acct.symbol &&
-            acct.quantity &&
+            financialAccount.taxType === "Crypto" &&
+            financialAccount.symbol &&
+            financialAccount.quantity &&
             cryptoPrices
           ) {
-            const price = cryptoPrices[acct.symbol];
+            const price = cryptoPrices[financialAccount.symbol];
             if (price) {
               return {
-                ...acct,
-                balance: price * acct.quantity,
+                ...financialAccount,
+                balance: price * financialAccount.quantity,
                 livePrice: price,
               };
             }
           }
 
           // Update Schwab account balances
-          if (acct.schwabAccountType && schwabData) {
-            const balance = schwabData[acct.schwabAccountType];
+          if (financialAccount.schwabAccountType && schwabData) {
+            const balance = schwabData[financialAccount.schwabAccountType];
             if (balance !== undefined) {
               return {
-                ...acct,
+                ...financialAccount,
                 balance: balance,
               };
             }
           }
 
-          return acct;
+          return financialAccount;
         });
 
         setAccounts(next);
@@ -120,7 +124,7 @@ const NetWorth = () => {
   const {
     total,
     byCategory,
-    accounts: acctList,
+    accounts: accountList,
   } = useMemo(() => computeNetWorth(accounts), [accounts]);
 
   const categoryData = useMemo(
@@ -133,7 +137,7 @@ const NetWorth = () => {
   );
 
   const sortedAccounts = useMemo(() => {
-    const list = [...acctList];
+    const list = [...accountList];
     list?.sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
       if (sortKey === "balance") return (a.balance - b.balance) * dir;
@@ -144,7 +148,7 @@ const NetWorth = () => {
       return 0;
     });
     return list;
-  }, [acctList, sortDir, sortKey]);
+  }, [accountList, sortDir, sortKey]);
 
   const toggleSort = (key) => {
     if (sortKey === key) {
@@ -194,41 +198,48 @@ const NetWorth = () => {
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Total net worth</p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">
-              {formatCurrency(total, 0)}
+          <div className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+            <p className="text-md text-slate-500">Total net worth</p>
+            <p className="mt-1 text-xl font-semibold text-slate-900">
+              {formatCurrency(total, ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS)}
             </p>
           </div>
-          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Largest category</p>
+          <div className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+            <p className="text-md text-slate-500">Largest category</p>
             <p className="mt-1 text-xl font-semibold text-slate-900">
-              <span className="text-2xl font-semibold text-slate-900">
+              <span className="text-xl font-semibold text-slate-900">
                 {categoryData?.sort((a, b) => b.value - a.value)[0]?.name ??
                   "Unknown"}
               </span>
-              <span className="text-2xl font-semibold mx-2 text-slate-900">
+              <span className="text-xl font-semibold mx-2 text-slate-900">
                 —
               </span>
-              <span className="text-2xl font-semibold text-slate-900">
+              <span className="text-xl font-semibold text-slate-900">
                 {formatCurrency(
                   categoryData?.sort((a, b) => b.value - a.value)[0]?.value ??
                     0,
-                  0
+                  ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS
                 )}
               </span>
             </p>
           </div>
-          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Accounts tracked</p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">
-              {acctList.length}
+          <div className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+            <p className="text-md text-slate-500">Investments tracked</p>
+            <p className="mt-1 text-xl font-semibold text-slate-900">
+              <span className="text-xl font-semibold text-slate-900">
+                {accountList?.length}
+              </span>
+              <span className="ml-2 text-xl font-semibold text-slate-900">
+                {accountList?.length === 1
+                  ? "Investment Account"
+                  : "Investment Accounts"}
+              </span>
             </p>
           </div>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="lg:col-span-2 rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Allocation</p>
@@ -242,7 +253,7 @@ const NetWorth = () => {
                 disabled={
                   !import.meta.env.DEV || isCryptoLoading || isChartLoading
                 }
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 title="Refresh crypto prices. Disabled on public URL to prevent API spamming."
               >
                 {isCryptoLoading || isChartLoading ? (
@@ -290,7 +301,12 @@ const NetWorth = () => {
                       ))}
                     </Pie>
                     <ReTooltip
-                      formatter={(value) => formatCurrency(value, 2)}
+                      formatter={(value) =>
+                        formatCurrency(
+                          value,
+                          ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS
+                        )
+                      }
                     />
                     <ReLegend />
                   </PieChart>
@@ -299,24 +315,42 @@ const NetWorth = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
             <p className="text-sm font-semibold text-slate-900">
-              Future Features
+              Feature Roadmap
             </p>
             <ul className="mt-3 space-y-2 text-sm text-slate-600">
               <li>
-                <s>• Connect to the CoinGecko API to refresh crypto prices</s>
+                ✅ — Enable automatic deployments on every merge to the
+                <code> main </code>branch with GitHub Pages
               </li>
-              <li>• Connect to the Schwab API to refresh account balances</li>
               <li>
-                • Connect to the Empower API to refresh retirement account
-                balances
+                ✅ — Randomize the data in <code> src/data/netWorth.js </code>
+                for mocking purposes.
+              </li>
+              <li>
+                ✅ — Connect to the<strong> CoinGecko API </strong>to refresh
+                cryptocurrency prices for
+                <strong> Bitcoin, Ethereum, and Dogecoin.</strong>
+              </li>
+              <li>
+                ❌ — Connect to the<strong> Schwab Developer API </strong>to
+                refresh account balances for accounts within
+                <strong> Charles Schwab </strong> such as a taxable brokerage,
+                checking account, individual retirement account
+                <strong> (IRA)</strong>, Roth individual retirement account
+                <strong> (Roth IRA)</strong>, etc.
+              </li>
+              <li>
+                ❌ — Connect to the <strong>Empower API</strong> to refresh
+                retirement account balances for accounts such as a
+                <strong> 401k, Roth 401k, HSA</strong>, etc.
               </li>
             </ul>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Accounts</p>
@@ -325,7 +359,7 @@ const NetWorth = () => {
               </p>
             </div>
           </div>
-          <div className="mt-4 overflow-hidden rounded-xl border border-slate-100">
+          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
             <table className="min-w-full divide-y divide-slate-100 text-sm text-slate-700">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
@@ -392,36 +426,43 @@ const NetWorth = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {sortedAccounts?.map((acct) => (
-                  <tr key={acct.id}>
+                {sortedAccounts?.map((sortedAccount) => (
+                  <tr key={sortedAccount.id}>
                     <td className="px-4 py-3">
                       <div
                         className="font-semibold text-slate-900"
                         title={
-                          acct.taxType === "Crypto" && acct.quantity
-                            ? `${acct.quantity} ${acct.description}`
-                            : acct.name
+                          sortedAccount.taxType === "Crypto" &&
+                          sortedAccount.quantity
+                            ? `${sortedAccount.quantity} ${sortedAccount.description}`
+                            : sortedAccount.name
                         }
                       >
-                        {acct.name}
+                        {sortedAccount.name}
                       </div>
-                      {acct.note ? (
+                      {sortedAccount.note ? (
                         <div className="text-xs text-slate-500">
-                          {acct.note}
+                          {sortedAccount.note}
                         </div>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3">{acct.category}</td>
-                    <td className="px-4 py-3">{acct.taxType}</td>
-                    <td className="px-4 py-3">{acct.description}</td>
+                    <td className="px-4 py-3">{sortedAccount.category}</td>
+                    <td className="px-4 py-3">{sortedAccount.taxType}</td>
+                    <td className="px-4 py-3">{sortedAccount.description}</td>
                     <td className="px-4 py-3 text-left font-semibold text-slate-900">
-                      {formatCurrency(acct.balance ?? 0)}
-                      {acct.taxType === "Crypto" && acct.quantity ? (
+                      {formatCurrency(
+                        sortedAccount.balance ?? 0,
+                        ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS
+                      )}
+                      {sortedAccount.taxType === "Crypto" &&
+                      sortedAccount.quantity ? (
                         <div className="text-xs text-slate-500">
                           <div>
-                            {acct.quantity} {acct.description}
+                            {sortedAccount.quantity} {sortedAccount.description}
                           </div>
-                          <div>At {formatCurrency(acct.livePrice)} each.</div>
+                          <div>
+                            At {formatCurrency(sortedAccount.livePrice)} each.
+                          </div>
                         </div>
                       ) : null}
                     </td>

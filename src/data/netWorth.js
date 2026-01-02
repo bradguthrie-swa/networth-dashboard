@@ -1,13 +1,21 @@
-// financial accounts
+import {
+  CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS,
+  RETIREMENT_INVESTMENT_ACCOUNT_MAX_DIGITS,
+  generateRandomNumberInRangeWithMaxDigits,
+} from "../utils/netWorth";
 export const financialAccounts = [
-  // Retirement accounts
+  // Retirement accounts (401k, Roth 401k, HSA)
   {
     id: "401k",
     name: "401k",
     category: "Retirement",
     taxType: "Tax-Deferred",
     description: "401k",
-    balance: 125000,
+    balance: generateRandomNumberInRangeWithMaxDigits(
+      500_000,
+      1_500_000,
+      RETIREMENT_INVESTMENT_ACCOUNT_MAX_DIGITS
+    ),
   },
   {
     id: "roth-401k",
@@ -15,7 +23,11 @@ export const financialAccounts = [
     category: "Retirement",
     taxType: "Roth",
     description: "Roth 401k",
-    balance: 35000,
+    balance: generateRandomNumberInRangeWithMaxDigits(
+      150_000,
+      500_000,
+      RETIREMENT_INVESTMENT_ACCOUNT_MAX_DIGITS
+    ),
   },
   {
     id: "hsa",
@@ -23,16 +35,24 @@ export const financialAccounts = [
     category: "Retirement",
     taxType: "Tax-Advantaged",
     description: "HSA",
-    balance: 25000,
+    balance: generateRandomNumberInRangeWithMaxDigits(
+      100_000,
+      150_000,
+      RETIREMENT_INVESTMENT_ACCOUNT_MAX_DIGITS
+    ),
   },
-  // Investment accounts
+  // Investment accounts (Taxable Brokerage)
   {
     id: "taxable-brokerage",
     name: "Schwab Taxable Brokerage",
     category: "Investments",
     taxType: "Taxable",
     description: "Low Risk Investments",
-    balance: 16135.31,
+    balance: generateRandomNumberInRangeWithMaxDigits(
+      75_000,
+      100_000,
+      RETIREMENT_INVESTMENT_ACCOUNT_MAX_DIGITS
+    ),
   },
   {
     id: "taxable-brokerage-2",
@@ -40,34 +60,50 @@ export const financialAccounts = [
     category: "Investments",
     taxType: "Taxable",
     description: "High Risk Investments",
-    balance: 11491.31,
+    balance: generateRandomNumberInRangeWithMaxDigits(
+      25_000,
+      75_000,
+      RETIREMENT_INVESTMENT_ACCOUNT_MAX_DIGITS
+    ),
   },
-  // Crypto accounts
+  // Cryptocurrency accounts (Individual holdings for Bitcoin, Ethereum, Dogecoin)
   {
     id: "btc",
     name: "Bitcoin",
-    category: "Crypto",
+    category: "Cryptocurrency",
     taxType: "Crypto",
     description: "BTC",
     symbol: "bitcoin",
-    quantity: 0.1,
+    quantity: generateRandomNumberInRangeWithMaxDigits(
+      0.1,
+      0.25,
+      CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS
+    ),
   },
   {
     id: "eth",
     name: "Ethereum",
-    category: "Crypto",
+    category: "Cryptocurrency",
     taxType: "Crypto",
     description: "ETH",
     symbol: "ethereum",
-    quantity: 2.5,
+    quantity: generateRandomNumberInRangeWithMaxDigits(
+      2.5,
+      5.0,
+      CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS
+    ),
   },
   {
     id: "doge",
     name: "Dogecoin",
-    category: "Crypto",
+    category: "Cryptocurrency",
     taxType: "Crypto",
     description: "DOGE",
     symbol: "dogecoin",
-    quantity: 500.0,
+    quantity: generateRandomNumberInRangeWithMaxDigits(
+      100,
+      500,
+      CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS
+    ),
   },
 ];
