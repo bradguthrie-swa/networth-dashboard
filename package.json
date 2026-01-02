@@ -1,7 +1,7 @@
 {
-  "name": "dashboard",
+  "name": "networth-dashboard",
   "version": "1.0.0",
-  "description": "Company dashboard for tracking net worth.",
+  "description": "Dashboard for tracking net worth.",
   "type": "module",
   "scripts": {
     "dev": "vite --open",
@@ -31,4 +31,3 @@
     "vite": "^7.2.6"
   }
 }
-

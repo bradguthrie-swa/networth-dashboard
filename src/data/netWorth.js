@@ -70,13 +70,4 @@ export const financialAccounts = [
     symbol: "dogecoin",
     quantity: 500.0,
   },
-  // Real estate equity
-  // {
-  //   id: "real-estate-equity",
-  //   name: "Real Estate Equity",
-  //   category: "Real Estate",
-  //   taxType: "Real Estate",
-  //   description: "Real Estate Equity",
-  //   balance: 25000,
-  // },
 ];
