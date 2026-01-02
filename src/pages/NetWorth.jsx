@@ -4,29 +4,20 @@ import {
   PieChart,
   ResponsiveContainer,
   Cell,
-  Tooltip as ReTooltip,
-  Legend as ReLegend,
+  Tooltip,
+  Legend,
 } from "recharts";
-import { financialAccounts } from "../data/netWorth";
-import {
-  ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS,
-  computeNetWorth,
-  formatCurrency,
-} from "../utils/netWorth";
+import { RefreshIcon, SpinnerIcon } from "../icons";
 import { useCryptoPrices } from "../contexts/CryptoPriceContext";
 import { fetchSchwabBalances } from "../utils/schwabApi";
-import { RefreshIcon } from "../icons/RefreshIcon";
-import { SpinnerIcon } from "../icons/SpinnerIcon";
-import { RENDER_DELAY_1_SECOND_MS } from "../utils/constants";
-
-const COLORS = [
-  "#0ea5e9", // blue
-  "#22c55e", // green
-  "#ef4444", // red
-  "#f59e0b", // yellow
-  "#6366f1", // purple
-  "#14b8a6", // teal
-];
+import { financialAccounts } from "../data/netWorth";
+import { computeNetWorth, formatCurrency } from "../utils/netWorth";
+import {
+  CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS,
+  FINANCIAL_ACCOUNT_MAX_DIGITS,
+  RENDER_DELAY_1_SECOND_MS,
+  NET_WORTH_PIE_CHART_COLORS,
+} from "../utils/constants";
 
 const NetWorth = () => {
   const {
@@ -136,6 +127,13 @@ const NetWorth = () => {
     [byCategory]
   );
 
+  const largestCategory = useMemo(() => {
+    if (!categoryData || categoryData.length === 0) {
+      return { name: "Unknown", value: 0 };
+    }
+    return categoryData.sort((a, b) => b.value - a.value)[0];
+  }, [categoryData]);
+
   const sortedAccounts = useMemo(() => {
     const list = [...accountList];
     list?.sort((a, b) => {
@@ -163,6 +161,27 @@ const NetWorth = () => {
     if (sortKey !== key) return "↕";
     return sortDir === "asc" ? "↑" : "↓";
   };
+
+  const isCryptoAccount = (account) => {
+    return account.taxType === "Crypto" && account.quantity;
+  };
+
+  const SortableTableHeader = ({
+    sortKey: headerKey,
+    label,
+    align = "left",
+  }) => (
+    <th className={`px-4 py-3 text-${align}`}>
+      <button
+        type="button"
+        onClick={() => toggleSort(headerKey)}
+        className="flex items-center gap-1"
+      >
+        {label}
+        <span className="text-xs text-slate-500">{sortIcon(headerKey)}</span>
+      </button>
+    </th>
+  );
 
   const handleRefresh = () => {
     // TODO: Fix for when on the public URL: https://bradguthrie-swa.github.io/networth-dashboard/
@@ -201,24 +220,22 @@ const NetWorth = () => {
           <div className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
             <p className="text-md text-slate-500">Total net worth</p>
             <p className="mt-1 text-xl font-semibold text-slate-900">
-              {formatCurrency(total, ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS)}
+              {formatCurrency(total, FINANCIAL_ACCOUNT_MAX_DIGITS)}
             </p>
           </div>
           <div className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
             <p className="text-md text-slate-500">Largest category</p>
             <p className="mt-1 text-xl font-semibold text-slate-900">
               <span className="text-xl font-semibold text-slate-900">
-                {categoryData?.sort((a, b) => b.value - a.value)[0]?.name ??
-                  "Unknown"}
+                {largestCategory.name}
               </span>
               <span className="text-xl font-semibold mx-2 text-slate-900">
                 —
               </span>
               <span className="text-xl font-semibold text-slate-900">
                 {formatCurrency(
-                  categoryData?.sort((a, b) => b.value - a.value)[0]?.value ??
-                    0,
-                  ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS
+                  largestCategory.value,
+                  FINANCIAL_ACCOUNT_MAX_DIGITS
                 )}
               </span>
             </p>
@@ -296,19 +313,20 @@ const NetWorth = () => {
                       {categoryData?.map((entry, index) => (
                         <Cell
                           key={entry.name}
-                          fill={COLORS[index % COLORS.length]}
+                          fill={
+                            NET_WORTH_PIE_CHART_COLORS[
+                              index % NET_WORTH_PIE_CHART_COLORS.length
+                            ]
+                          }
                         />
                       ))}
                     </Pie>
-                    <ReTooltip
+                    <Tooltip
                       formatter={(value) =>
-                        formatCurrency(
-                          value,
-                          ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS
-                        )
+                        formatCurrency(value, FINANCIAL_ACCOUNT_MAX_DIGITS)
                       }
                     />
-                    <ReLegend />
+                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -363,66 +381,18 @@ const NetWorth = () => {
             <table className="min-w-full divide-y divide-slate-100 text-sm text-slate-700">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-4 py-3 text-left">
-                    <button
-                      type="button"
-                      onClick={() => toggleSort("name")}
-                      className="flex items-center gap-1"
-                    >
-                      Account
-                      <span className="text-xs text-slate-500">
-                        {sortIcon("name")}
-                      </span>
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-left">
-                    <button
-                      type="button"
-                      onClick={() => toggleSort("category")}
-                      className="flex items-center gap-1"
-                    >
-                      Category
-                      <span className="text-xs text-slate-500">
-                        {sortIcon("category")}
-                      </span>
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-left">
-                    <button
-                      type="button"
-                      onClick={() => toggleSort("taxType")}
-                      className="flex items-center gap-1"
-                    >
-                      Tax Type
-                      <span className="text-xs text-slate-500">
-                        {sortIcon("taxType")}
-                      </span>
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-left">
-                    <button
-                      type="button"
-                      onClick={() => toggleSort("description")}
-                      className="flex items-center gap-1"
-                    >
-                      Description
-                      <span className="text-xs text-slate-500">
-                        {sortIcon("description")}
-                      </span>
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => toggleSort("balance")}
-                      className="flex items-center gap-1"
-                    >
-                      Balance
-                      <span className="text-xs text-slate-500">
-                        {sortIcon("balance")}
-                      </span>
-                    </button>
-                  </th>
+                  <SortableTableHeader sortKey="name" label="Account" />
+                  <SortableTableHeader sortKey="category" label="Category" />
+                  <SortableTableHeader sortKey="taxType" label="Tax Type" />
+                  <SortableTableHeader
+                    sortKey="description"
+                    label="Description"
+                  />
+                  <SortableTableHeader
+                    sortKey="balance"
+                    label="Balance"
+                    align="right"
+                  />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -432,8 +402,7 @@ const NetWorth = () => {
                       <div
                         className="font-semibold text-slate-900"
                         title={
-                          sortedAccount.taxType === "Crypto" &&
-                          sortedAccount.quantity
+                          isCryptoAccount(sortedAccount)
                             ? `${sortedAccount.quantity} ${sortedAccount.description}`
                             : sortedAccount.name
                         }
@@ -452,19 +421,22 @@ const NetWorth = () => {
                     <td className="px-4 py-3 text-left font-semibold text-slate-900">
                       {formatCurrency(
                         sortedAccount.balance ?? 0,
-                        ACCOUNT_SUMMARY_NET_WORTH_MAX_DIGITS
+                        FINANCIAL_ACCOUNT_MAX_DIGITS
                       )}
-                      {sortedAccount.taxType === "Crypto" &&
-                      sortedAccount.quantity ? (
-                        <div className="text-xs text-slate-500">
-                          <div>
-                            {sortedAccount.quantity} {sortedAccount.description}
-                          </div>
-                          <div>
-                            At {formatCurrency(sortedAccount.livePrice)} each.
-                          </div>
-                        </div>
-                      ) : null}
+                      {isCryptoAccount(sortedAccount) &&
+                        (() => {
+                          const cryptoQuantityString = `${sortedAccount.quantity} ${sortedAccount.description}`;
+                          const cryptoPriceString = `At ${formatCurrency(
+                            sortedAccount.livePrice,
+                            CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS
+                          )} each.`;
+                          return (
+                            <div className="text-xs text-slate-500">
+                              <div>{cryptoQuantityString}</div>
+                              <div>{cryptoPriceString}</div>
+                            </div>
+                          );
+                        })()}
                     </td>
                   </tr>
                 ))}
