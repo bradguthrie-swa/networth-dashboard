@@ -18,12 +18,13 @@ const getCachedPrices = () => {
     const cached = localStorage.getItem(CACHE_KEY);
     if (!cached) return null;
 
-    const { prices, timestamp } = JSON.parse(cached);
+    const cacheData = JSON.parse(cached);
+    const { prices, changes24h, timestamp } = cacheData;
     const now = Date.now();
 
     // Check if cache is still valid within the given polling interval
     if (now - timestamp < CACHE_DURATION) {
-      return { prices, timestamp };
+      return { prices, changes24h, timestamp };
     }
 
     // Cache expired, remove it
@@ -40,18 +41,20 @@ const getCachedPricesExpired = () => {
     const cached = localStorage.getItem(CACHE_KEY);
     if (!cached) return null;
 
-    const { prices, timestamp } = JSON.parse(cached);
-    return { prices, timestamp };
+    const cacheData = JSON.parse(cached);
+    const { prices, changes24h, timestamp } = cacheData;
+    return { prices, changes24h, timestamp };
   } catch (err) {
     console.warn("Failed to read cached prices:", err);
     return null;
   }
 };
 
-const setCachedPrices = (prices) => {
+const setCachedPrices = (prices, changes24h) => {
   try {
     const cacheData = {
       prices,
+      changes24h,
       timestamp: Date.now(),
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
@@ -63,6 +66,9 @@ const setCachedPrices = (prices) => {
 export const CryptoPriceProvider = ({ children }) => {
   const initialCache = getCachedPrices();
   const [prices, setPrices] = useState(() => initialCache?.prices || null);
+  const [changes24h, setChanges24h] = useState(
+    () => initialCache?.changes24h || null
+  );
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(() =>
@@ -75,6 +81,7 @@ export const CryptoPriceProvider = ({ children }) => {
       const cached = getCachedPrices();
       if (cached) {
         setPrices(cached.prices);
+        setChanges24h(cached.changes24h);
         setLastUpdated(new Date(cached.timestamp));
         setError(null);
         return;
@@ -85,9 +92,10 @@ export const CryptoPriceProvider = ({ children }) => {
     setError(null);
 
     try {
-      const newPrices = await fetchCryptoPrices();
-      setPrices(newPrices);
-      setCachedPrices(newPrices);
+      const result = await fetchCryptoPrices();
+      setPrices(result.prices);
+      setChanges24h(result.changes24h);
+      setCachedPrices(result.prices, result.changes24h);
       setLastUpdated(new Date());
       setError(null);
     } catch (err) {
@@ -95,6 +103,7 @@ export const CryptoPriceProvider = ({ children }) => {
       const cached = getCachedPricesExpired();
       if (cached) {
         setPrices(cached.prices);
+        setChanges24h(cached.changes24h);
         setLastUpdated(new Date(cached.timestamp));
         // Check if it's a 429 rate limit error
         if (err.status === 429 || err.message?.includes("429")) {
@@ -135,6 +144,7 @@ export const CryptoPriceProvider = ({ children }) => {
     <CryptoPriceContext.Provider
       value={{
         prices,
+        changes24h,
         error,
         isLoading,
         lastUpdated,

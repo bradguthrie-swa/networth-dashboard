@@ -23,10 +23,18 @@ export const fetchCryptoPrices = async (
   }
 
   const data = await res.json();
+  const prices = coins.reduce((acc, coin) => {
+    acc[coin] = data?.[coin]?.usd ?? null;
+    return acc;
+  }, {});
+
+  const changes24h = coins.reduce((acc, coin) => {
+    acc[coin] = data?.[coin]?.usd_24h_change ?? null;
+    return acc;
+  }, {});
+
   return {
-    ...coins.reduce((acc, coin) => {
-      acc[coin] = data?.[coin]?.usd ?? null;
-      return acc;
-    }, {}),
+    prices,
+    changes24h,
   };
 };

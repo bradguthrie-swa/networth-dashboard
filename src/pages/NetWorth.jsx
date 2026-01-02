@@ -7,7 +7,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { RefreshIcon, SpinnerIcon } from "../icons";
+import { RefreshIcon, SpinnerIcon, CaretUpIcon, CaretDownIcon } from "../icons";
 import { useCryptoPrices } from "../contexts/CryptoPriceContext";
 import { fetchSchwabBalances } from "../utils/schwabApi";
 import { financialAccounts } from "../data/netWorth";
@@ -22,6 +22,7 @@ import {
 const NetWorth = () => {
   const {
     prices: cryptoPrices,
+    changes24h: cryptoChanges24h,
     error: cryptoError,
     lastUpdated: cryptoLastUpdated,
     refreshPrices,
@@ -414,15 +415,42 @@ const NetWorth = () => {
                 {sortedAccounts?.map((sortedAccount) => (
                   <tr key={sortedAccount.id}>
                     <td className="px-4 py-3">
-                      <div
-                        className="font-semibold text-slate-900"
-                        title={
-                          isCryptoAccount(sortedAccount)
-                            ? `${sortedAccount.quantity} ${sortedAccount.description}`
-                            : sortedAccount.name
-                        }
-                      >
-                        {sortedAccount.name}
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="font-semibold text-slate-900"
+                          title={
+                            isCryptoAccount(sortedAccount)
+                              ? `${sortedAccount.quantity} ${sortedAccount.description}`
+                              : sortedAccount.name
+                          }
+                        >
+                          {sortedAccount.name}
+                        </div>
+                        {isCryptoAccount(sortedAccount) &&
+                          sortedAccount.symbol &&
+                          cryptoChanges24h?.[sortedAccount.symbol] !== null &&
+                          cryptoChanges24h?.[sortedAccount.symbol] !==
+                            undefined && (
+                            <div
+                              className={`flex items-center gap-1 text-sm font-medium ${
+                                cryptoChanges24h[sortedAccount.symbol] >= 0
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }`}
+                            >
+                              {cryptoChanges24h[sortedAccount.symbol] >= 0 ? (
+                                <CaretUpIcon className="h-3 w-3" />
+                              ) : (
+                                <CaretDownIcon className="h-3 w-3" />
+                              )}
+                              <span>
+                                {Math.abs(
+                                  cryptoChanges24h[sortedAccount.symbol]
+                                ).toFixed(2)}
+                                %
+                              </span>
+                            </div>
+                          )}
                       </div>
                       {sortedAccount.note ? (
                         <div className="text-xs text-slate-500">
