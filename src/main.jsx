@@ -5,7 +5,7 @@ import App from "./App";
 import "./index.css";
 
 // Get base path from Vite config or use "/"
-// For GitHub Pages, this should match the repo name (e.g., "/dashboard/")
+// For GitHub Pages, this should match the repo name (e.g., "/networth-dashboard/")
 const basename = import.meta.env.BASE_URL || "/";
 
 createRoot(document.getElementById("root")).render(
@@ -15,4 +15,3 @@ createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </StrictMode>
 );
-
