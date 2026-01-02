@@ -238,9 +238,11 @@ const NetWorth = () => {
               <button
                 type="button"
                 onClick={handleRefresh}
-                disabled={isCryptoLoading || isChartLoading}
+                disabled={
+                  !import.meta.env.DEV || isCryptoLoading || isChartLoading
+                }
                 className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
-                title="Refresh crypto prices"
+                title="Refresh crypto prices. Disabled on public URL to prevent API spamming."
               >
                 {isCryptoLoading || isChartLoading ? (
                   <span className="flex items-center gap-1.5">
