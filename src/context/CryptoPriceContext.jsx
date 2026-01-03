@@ -1,10 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchCryptoPrices } from "../utils/cryptoPrices";
 import {
   POLLING_INTERVAL_1_MINUTE_MS,
   POLLING_INTERVAL_480_MINUTES_MS,
 } from "../utils/constants";
-const CryptoPriceContext = createContext(null);
+import { CryptoPriceContext } from "./CryptoPriceContext";
 
 const CACHE_KEY = "crypto_prices_cache";
 
@@ -154,12 +154,4 @@ export const CryptoPriceProvider = ({ children }) => {
       {children}
     </CryptoPriceContext.Provider>
   );
-};
-
-export const useCryptoPrices = () => {
-  const context = useContext(CryptoPriceContext);
-  if (!context) {
-    throw new Error("useCryptoPrices must be used within CryptoPriceProvider");
-  }
-  return context;
 };

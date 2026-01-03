@@ -5,4 +5,3 @@ export const fetchSchwabBalances = async () => {
   // This will be replaced with actual API calls when credentials are set up
   return null;
 };
-

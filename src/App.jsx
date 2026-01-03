@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { CryptoPriceProvider } from "./contexts/CryptoPriceContext";
+import { CryptoPriceProvider } from "./context/CryptoPriceContext.jsx";
 import NetWorth from "./pages/NetWorth";
 
 function App() {
