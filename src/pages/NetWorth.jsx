@@ -396,7 +396,7 @@ const NetWorth = () => {
                         formatCurrency(value, FINANCIAL_ACCOUNT_MAX_DIGITS)
                       }
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 30 }} />
                   </PieChart>
                 </ResponsiveContainer>
               )}
