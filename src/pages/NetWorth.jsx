@@ -13,6 +13,7 @@ import {
   CaretUpIcon,
   CaretDownIcon,
   ShuffleIcon,
+  DashIcon,
 } from "../icons";
 import { useCryptoPrices } from "../hooks/useCryptoPrices";
 import { fetchSchwabBalances } from "../utils/schwabApi";
@@ -191,6 +192,7 @@ const NetWorth = () => {
   };
 
   const SortableTableHeader = ({
+    sortable = true,
     sortKey: headerKey,
     label,
     align = "left",
@@ -199,10 +201,15 @@ const NetWorth = () => {
       <button
         type="button"
         onClick={() => toggleSort(headerKey)}
-        className="flex items-center gap-1"
+        className={`flex items-center gap-1 ${
+          sortable ? "cursor-pointer" : "cursor-default"
+        }`}
+        disabled={!sortable}
       >
         {label}
-        <span className="text-xs text-slate-500">{sortIcon(headerKey)}</span>
+        {sortable && (
+          <span className="text-xs text-slate-500">{sortIcon(headerKey)}</span>
+        )}
       </button>
     </th>
   );
@@ -306,8 +313,8 @@ const NetWorth = () => {
                   type="button"
                   onClick={regenerateMockData}
                   disabled={isChartLoading}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
-                  title="Regenerate mock account data with new random values"
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 min-h-10 flex items-center justify-center text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  title="Regenerate mock account data with new randomized values."
                 >
                   {isChartLoading ? (
                     <span className="flex items-center gap-1.5">
@@ -327,8 +334,8 @@ const NetWorth = () => {
                   disabled={
                     !import.meta.env.DEV || isCryptoLoading || isChartLoading
                   }
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
-                  title="Refresh crypto prices. Disabled on public URL to prevent API spamming."
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 min-h-10 flex items-center justify-center text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  title="Refresh cryptocurrency prices. Disabled on public URL to prevent API spamming."
                 >
                   {isCryptoLoading || isChartLoading ? (
                     <span className="flex items-center gap-1.5">
@@ -389,7 +396,7 @@ const NetWorth = () => {
                         formatCurrency(value, FINANCIAL_ACCOUNT_MAX_DIGITS)
                       }
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 30 }} />
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -445,60 +452,37 @@ const NetWorth = () => {
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
                   <SortableTableHeader sortKey="name" label="Account" />
+                  <SortableTableHeader sortKey="balance" label="Balance" />
+                  <SortableTableHeader
+                    sortable={false}
+                    sortKey="24hChange"
+                    label="24h Change"
+                  />
                   <SortableTableHeader sortKey="category" label="Category" />
                   <SortableTableHeader sortKey="taxType" label="Tax Type" />
-                  <SortableTableHeader sortKey="balance" label="Balance" />
                 </tr>
               </thead>
               <tbody className="divide-y-2 divide-slate-100 bg-white">
                 {sortedAccounts?.map((sortedAccount) => (
                   <tr key={sortedAccount.id}>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="font-semibold text-slate-900"
-                          title={
-                            isCryptoAccount(sortedAccount)
-                              ? `${sortedAccount.quantity} ${sortedAccount.description}`
-                              : sortedAccount.name
-                          }
-                        >
-                          <div className="items-center gap-1">
-                            <div>{sortedAccount.name}</div>
-                            <div className="text-xs text-slate-500">
-                              {sortedAccount.description}
-                            </div>
+                      <div
+                        className="font-semibold text-slate-900"
+                        title={
+                          isCryptoAccount(sortedAccount)
+                            ? `${sortedAccount.quantity} ${sortedAccount.description}`
+                            : sortedAccount.name
+                        }
+                      >
+                        <div className="items-center gap-1">
+                          <div>{sortedAccount.name}</div>
+                          <div className="text-xs text-slate-500">
+                            {sortedAccount.description}
                           </div>
                         </div>
-                        {isCryptoAccount(sortedAccount) &&
-                          sortedAccount.symbol &&
-                          cryptoChanges24h?.[sortedAccount.symbol] !== null &&
-                          cryptoChanges24h?.[sortedAccount.symbol] !==
-                            undefined && (
-                            <div
-                              className={`flex items-center gap-1 text-sm font-medium ${
-                                cryptoChanges24h[sortedAccount.symbol] >= 0
-                                  ? "text-green-600"
-                                  : "text-red-600"
-                              }`}
-                            >
-                              {cryptoChanges24h[sortedAccount.symbol] >= 0 ? (
-                                <CaretUpIcon className="h-3 w-3" />
-                              ) : (
-                                <CaretDownIcon className="h-3 w-3" />
-                              )}
-                              <span>
-                                {Math.abs(
-                                  cryptoChanges24h[sortedAccount.symbol]
-                                ).toFixed(2)}
-                                %
-                              </span>
-                            </div>
-                          )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">{sortedAccount.category}</td>
-                    <td className="px-4 py-3">{sortedAccount.taxType}</td>
+
                     <td className="px-4 py-3 text-left font-semibold text-slate-900">
                       {formatCurrency(
                         sortedAccount.balance ?? 0,
@@ -523,6 +507,38 @@ const NetWorth = () => {
                           );
                         })()}
                     </td>
+                    <td className="px-4 py-3">
+                      {isCryptoAccount(sortedAccount) &&
+                      sortedAccount.symbol &&
+                      cryptoChanges24h?.[sortedAccount.symbol] !== null &&
+                      cryptoChanges24h?.[sortedAccount.symbol] !== undefined ? (
+                        <div
+                          className={`flex items-center justify-end gap-1 text-sm font-medium w-20 ${
+                            cryptoChanges24h[sortedAccount.symbol] >= 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {cryptoChanges24h[sortedAccount.symbol] >= 0 ? (
+                            <CaretUpIcon className="h-3 w-3" />
+                          ) : (
+                            <CaretDownIcon className="h-3 w-3" />
+                          )}
+                          <span>
+                            {Math.abs(
+                              cryptoChanges24h[sortedAccount.symbol]
+                            ).toFixed(2)}
+                            %
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-end w-20">
+                          <DashIcon className="h-4 w-4 text-slate-400" />
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">{sortedAccount.category}</td>
+                    <td className="px-4 py-3">{sortedAccount.taxType}</td>
                   </tr>
                 ))}
               </tbody>

@@ -24,10 +24,10 @@ export const generateFinancialAccounts = () => [
     name: "401k",
     category: "Retirement",
     taxType: "Tax-Deferred",
-    description: "401k",
+    description: "Empower Retirement 401(k) balance.",
     balance: generateRandomNumberInRangeWithMaxDigits(
       500_000,
-      1_500_000,
+      1_000_000,
       FINANCIAL_ACCOUNT_MAX_DIGITS
     ),
   },
@@ -36,7 +36,7 @@ export const generateFinancialAccounts = () => [
     name: "Roth 401k",
     category: "Retirement",
     taxType: "Roth",
-    description: "Roth 401k",
+    description: "Empower Retirement Roth 401(k) balance.",
     balance: generateRandomNumberInRangeWithMaxDigits(
       150_000,
       500_000,
@@ -48,7 +48,7 @@ export const generateFinancialAccounts = () => [
     name: "HSA",
     category: "Retirement",
     taxType: "Tax-Advantaged",
-    description: "HSA",
+    description: "Optum Bank Health Savings Account balance.",
     balance: generateRandomNumberInRangeWithMaxDigits(
       125_000,
       150_000,
@@ -57,11 +57,12 @@ export const generateFinancialAccounts = () => [
   },
   // Investment accounts (Taxable Brokerage)
   {
-    id: "taxable-brokerage",
+    id: "taxable-brokerage-low-risk",
     name: "Schwab Taxable Brokerage",
     category: "Investments",
     taxType: "Taxable",
-    description: "Low Risk Investments",
+    description:
+      "Low risk investments, including ETFs, index funds, and bonds.",
     balance: generateRandomNumberInRangeWithMaxDigits(
       100_000,
       125_000,
@@ -69,14 +70,28 @@ export const generateFinancialAccounts = () => [
     ),
   },
   {
-    id: "taxable-brokerage-2",
+    id: "taxable-brokerage-high-risk",
     name: "Schwab High Risk Taxable Brokerage",
     category: "Investments",
     taxType: "Taxable",
-    description: "High Risk Investments",
+    description:
+      "High risk investments, including stocks, options, and futures.",
     balance: generateRandomNumberInRangeWithMaxDigits(
       100_000,
       125_000,
+      FINANCIAL_ACCOUNT_MAX_DIGITS
+    ),
+  },
+  // Real estate
+  {
+    id: "home-equity",
+    name: "Home Equity",
+    category: "Real Estate",
+    taxType: "Taxable",
+    description: "First single family home in the suburbs.",
+    balance: generateRandomNumberInRangeWithMaxDigits(
+      200_000,
+      350_000,
       FINANCIAL_ACCOUNT_MAX_DIGITS
     ),
   },
