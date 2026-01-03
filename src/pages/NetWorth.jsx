@@ -8,7 +8,7 @@ import {
   Legend,
 } from "recharts";
 import { RefreshIcon, SpinnerIcon, CaretUpIcon, CaretDownIcon } from "../icons";
-import { useCryptoPrices } from "../contexts/CryptoPriceContext";
+import { useCryptoPrices } from "../hooks/useCryptoPrices";
 import { fetchSchwabBalances } from "../utils/schwabApi";
 import { financialAccounts } from "../data/netWorth";
 import { computeNetWorth, formatCurrency } from "../utils/netWorth";
@@ -110,6 +110,7 @@ const NetWorth = () => {
         }, RENDER_DELAY_HALF_SECOND_MS);
       } catch (err) {
         // If update fails, keep static balances
+        console.error("Error loading Schwab balances:", err);
         setPriceError("Live prices unavailable; showing last saved values.");
         setIsChartLoading(false);
       }
@@ -401,10 +402,6 @@ const NetWorth = () => {
                   <SortableTableHeader sortKey="category" label="Category" />
                   <SortableTableHeader sortKey="taxType" label="Tax Type" />
                   <SortableTableHeader
-                    sortKey="description"
-                    label="Description"
-                  />
-                  <SortableTableHeader
                     sortKey="balance"
                     label="Balance"
                     align="right"
@@ -424,7 +421,12 @@ const NetWorth = () => {
                               : sortedAccount.name
                           }
                         >
-                          {sortedAccount.name}
+                          <div className="items-center gap-1">
+                            <div>{sortedAccount.name}</div>
+                            <div className="text-xs text-slate-500">
+                              {sortedAccount.description}
+                            </div>
+                          </div>
                         </div>
                         {isCryptoAccount(sortedAccount) &&
                           sortedAccount.symbol &&
@@ -452,15 +454,9 @@ const NetWorth = () => {
                             </div>
                           )}
                       </div>
-                      {sortedAccount.note ? (
-                        <div className="text-xs text-slate-500">
-                          {sortedAccount.note}
-                        </div>
-                      ) : null}
                     </td>
                     <td className="px-4 py-3">{sortedAccount.category}</td>
                     <td className="px-4 py-3">{sortedAccount.taxType}</td>
-                    <td className="px-4 py-3">{sortedAccount.description}</td>
                     <td className="px-4 py-3 text-left font-semibold text-slate-900">
                       {formatCurrency(
                         sortedAccount.balance ?? 0,
@@ -468,10 +464,14 @@ const NetWorth = () => {
                       )}
                       {isCryptoAccount(sortedAccount) &&
                         (() => {
+                          const cryptoMaxDecimalPoints =
+                            sortedAccount.livePrice < 1
+                              ? CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS
+                              : 2;
                           const cryptoQuantityString = `${sortedAccount.quantity} ${sortedAccount.description}`;
                           const cryptoPriceString = `At ${formatCurrency(
                             sortedAccount.livePrice,
-                            CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS
+                            cryptoMaxDecimalPoints
                           )} each.`;
                           return (
                             <div className="text-xs text-slate-500">

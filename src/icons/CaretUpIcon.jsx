@@ -16,4 +16,3 @@ export const CaretUpIcon = ({ className = "h-4 w-4" }) => {
     </svg>
   );
 };
-
