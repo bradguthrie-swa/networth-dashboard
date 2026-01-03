@@ -7,10 +7,16 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { RefreshIcon, SpinnerIcon, CaretUpIcon, CaretDownIcon } from "../icons";
+import {
+  RefreshIcon,
+  SpinnerIcon,
+  CaretUpIcon,
+  CaretDownIcon,
+  ShuffleIcon,
+} from "../icons";
 import { useCryptoPrices } from "../hooks/useCryptoPrices";
 import { fetchSchwabBalances } from "../utils/schwabApi";
-import { financialAccounts } from "../data/netWorth";
+import { generateFinancialAccounts } from "../data/netWorth";
 import { computeNetWorth, formatCurrency } from "../utils/netWorth";
 import {
   CRYPTOCURRENCY_ACCOUNT_MAX_DIGITS,
@@ -28,7 +34,7 @@ const NetWorth = () => {
     refreshPrices,
     isLoading: isCryptoLoading,
   } = useCryptoPrices();
-  const [accounts, setAccounts] = useState(financialAccounts);
+  const [accounts, setAccounts] = useState(generateFinancialAccounts());
   const [sortKey, setSortKey] = useState("balance");
   const [sortDir, setSortDir] = useState("desc"); // default: highest balance first
   const [priceError, setPriceError] = useState(null);
@@ -53,7 +59,10 @@ const NetWorth = () => {
           return null;
         });
 
-        const next = financialAccounts?.map((financialAccount) => {
+        // Use current accounts state, or fall back to financialAccounts if accounts haven't been set yet
+        const currentAccounts =
+          accounts.length > 0 ? accounts : generateFinancialAccounts();
+        const next = currentAccounts?.map((financialAccount) => {
           // Update crypto balances from context
           if (
             financialAccount.taxType === "Crypto" &&
@@ -122,6 +131,9 @@ const NetWorth = () => {
     }
 
     loadSchwabBalances();
+    // Note: accounts is intentionally excluded to prevent infinite loops
+    // The effect updates accounts, so including it would cause re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cryptoPrices, cryptoError, cryptoLastUpdated, isCryptoLoading]);
 
   const {
@@ -206,6 +218,19 @@ const NetWorth = () => {
     }
   };
 
+  const regenerateMockData = () => {
+    // Regenerate all account data with new random values
+    const regeneratedAccounts = generateFinancialAccounts();
+    setAccounts(regeneratedAccounts);
+    setIsChartLoading(true);
+    refreshPrices();
+
+    // Mark chart as ready after a short delay to allow rendering
+    setTimeout(() => {
+      setIsChartLoading(false);
+    }, RENDER_DELAY_HALF_SECOND_MS);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
@@ -276,27 +301,48 @@ const NetWorth = () => {
                   By category
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleRefresh}
-                disabled={
-                  !import.meta.env.DEV || isCryptoLoading || isChartLoading
-                }
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
-                title="Refresh crypto prices. Disabled on public URL to prevent API spamming."
-              >
-                {isCryptoLoading || isChartLoading ? (
-                  <span className="flex items-center gap-1.5">
-                    <SpinnerIcon className="h-4 w-4" />
-                    Refreshing...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5">
-                    <RefreshIcon className="h-4 w-4" />
-                    Refresh
-                  </span>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={regenerateMockData}
+                  disabled={isChartLoading}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  title="Regenerate mock account data with new random values"
+                >
+                  {isChartLoading ? (
+                    <span className="flex items-center gap-1.5">
+                      <SpinnerIcon className="h-4 w-4" />
+                      Regenerating Data...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <ShuffleIcon className="h-4 w-4" />
+                      Regenerate Mock Data
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRefresh}
+                  disabled={
+                    !import.meta.env.DEV || isCryptoLoading || isChartLoading
+                  }
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  title="Refresh crypto prices. Disabled on public URL to prevent API spamming."
+                >
+                  {isCryptoLoading || isChartLoading ? (
+                    <span className="flex items-center gap-1.5">
+                      <SpinnerIcon className="h-4 w-4" />
+                      Refreshing...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <RefreshIcon className="h-4 w-4" />
+                      Refresh
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
             <div className="mt-4 h-80 relative">
               {isChartLoading ||
@@ -366,12 +412,12 @@ const NetWorth = () => {
               <li>
                 ✅ — Connect to the<strong> CoinGecko API </strong>to refresh
                 cryptocurrency prices for
-                <strong> Bitcoin, Ethereum, and Dogecoin.</strong>
+                <strong> Bitcoin, Ethereum, and Dogecoin</strong>.
               </li>
               <li>
                 ❌ — Connect to the<strong> Schwab Developer API </strong>to
                 refresh account balances for accounts within
-                <strong> Charles Schwab </strong> such as a taxable brokerage,
+                <strong> Charles Schwab </strong>such as a taxable brokerage,
                 checking account, individual retirement account
                 <strong> (IRA)</strong>, Roth individual retirement account
                 <strong> (Roth IRA)</strong>, etc.
@@ -395,20 +441,16 @@ const NetWorth = () => {
             </div>
           </div>
           <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-100 text-sm text-slate-700">
+            <table className="min-w-full divide-y-2 divide-slate-100 text-sm text-slate-700">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
                   <SortableTableHeader sortKey="name" label="Account" />
                   <SortableTableHeader sortKey="category" label="Category" />
                   <SortableTableHeader sortKey="taxType" label="Tax Type" />
-                  <SortableTableHeader
-                    sortKey="balance"
-                    label="Balance"
-                    align="right"
-                  />
+                  <SortableTableHeader sortKey="balance" label="Balance" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y-2 divide-slate-100 bg-white">
                 {sortedAccounts?.map((sortedAccount) => (
                   <tr key={sortedAccount.id}>
                     <td className="px-4 py-3">

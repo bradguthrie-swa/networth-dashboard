@@ -5,9 +5,8 @@ import {
 import { generateRandomNumberInRangeWithMaxDigits } from "../utils/netWorth";
 
 /**
- * An array of financial account objects representing retirement accounts, investment accounts, and cryptocurrency holdings.
+ * Generates an array of financial account objects with randomized values.
  *
- * @type {Array<Object>}
  * @property {String} id - A unique identifier for the account.
  * @property {String} name - The display name of the account.
  * @property {String} category - The category classification (e.g., "Retirement", "Investments", "Cryptocurrency").
@@ -16,8 +15,9 @@ import { generateRandomNumberInRangeWithMaxDigits } from "../utils/netWorth";
  * @property {Number} balance - The current balance value (for non-crypto accounts).
  * @property {String} symbol - The cryptocurrency coin name, used to fetch live prices from the CoinGecko API (for crypto accounts only).
  * @property {Number} quantity - The quantity of cryptocurrency held (for crypto accounts only).
+ * @returns {Array<Object>} An array of financial account objects representing retirement accounts, investment accounts, and cryptocurrency holdings.
  */
-export const financialAccounts = [
+export const generateFinancialAccounts = () => [
   // Retirement accounts (401k, Roth 401k, HSA)
   {
     id: "401k",
